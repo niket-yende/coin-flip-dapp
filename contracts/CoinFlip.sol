@@ -12,7 +12,7 @@ contract CoinFlip is Ownable {
     // Define the Game struct to represent a single game
     struct Game {
         uint256 gameId;
-        address player;
+        address playerAddress;
         uint8[] predictedFlips;
         uint8[] flipsResult;
         bool isPresent;
@@ -120,8 +120,8 @@ contract CoinFlip is Ownable {
 
         if (compareArrays(game.predictedFlips, _flipsResult)) {
             state.prizeClaimed = true;
-            aptosCoin.safeTransfer(game.player, PRIZE_AMOUNT_APT); // 10 APT prize
-            emit ClaimPrize(_gameId, game.player, block.timestamp);
+            aptosCoin.safeTransfer(game.playerAddress, PRIZE_AMOUNT_APT); // 10 APT prize
+            emit ClaimPrize(_gameId, game.playerAddress, block.timestamp);
         }
     }
 
