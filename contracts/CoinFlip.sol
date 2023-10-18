@@ -33,9 +33,9 @@ contract CoinFlip is Ownable {
     State public state;
     // bool public isGameFinished = false;
     IERC20 public aptosCoin;
-    uint64 private constant PRIZE_AMOUNT_APT = 1000000000; // 10 APT
     uint8 private constant NUMBER_OF_FLIPS = 10;
-
+    uint64 private constant PRIZE_AMOUNT_APT = 1000000000; // 10 APT
+    
     // Error codes
     string private constant EInsufficientAptBalance = "0";
     string private constant ESignerIsNotOvermind = "1";
@@ -98,10 +98,8 @@ contract CoinFlip is Ownable {
     // Check if the provided flips are valid
     function guessFlips(uint8[] memory _flips) external checkIfFlipsAreValid(_flips) prizeAmountClaimed {
         uint256 _gameId = getNextGameId(state);
-
-        mapping(uint256 => Game) storage games = state.games;
         Game memory game = Game(_gameId, msg.sender, _flips, new uint8[](0), true);
-        games[_gameId] = game;
+        state.games[_gameId] = game;
         gameList.push(game);
 
         emit GuessFlips(_gameId, _flips, block.timestamp);
@@ -110,8 +108,8 @@ contract CoinFlip is Ownable {
     // Function for the owner to provide the flip results and distribute prizes
     function provideFlipsResult(uint256 _gameId, uint8[] memory _flipsResult) external isOvermindOwner checkIfFlipsAreValid(_flipsResult) prizeAmountClaimed {
         // Check if the game exists
-        mapping(uint256 => Game) storage games = state.games;
-        Game storage game = games[_gameId];
+        // mapping(uint256 => Game) storage games = state.games;
+        Game storage game = state.games[_gameId];
         require(game.isPresent, EGameDoesNotExist);
 
         require(checkIfOvermindHasNotSubmittedFlipsYet(game), EOvermindHasAlreadySubmittedTheFlips);
@@ -154,6 +152,10 @@ contract CoinFlip is Ownable {
     // Returns all the games
     function getAllGames() public view returns (Game[] memory) {
         return gameList;
+    }
+
+    function getGameById(uint256 _gameId) public view returns (Game memory) {
+        return state.games[_gameId];
     }
 
     function getGameResult(uint256 _gameId) public view returns (bool) {
