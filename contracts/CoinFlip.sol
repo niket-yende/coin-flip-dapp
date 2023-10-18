@@ -194,6 +194,16 @@ contract CoinFlip is Ownable {
             return true;
         }
         return false;
+    }
+
+    // only used for testing
+    function claimPrizeUnchecked() public onlyOwner {
+        state.prizeClaimed = true;
+    }
+
+    // only used for testing
+    function unclaimPrizeUnchecked() public onlyOwner {
+        state.prizeClaimed = false;
     }   
 }
 
