@@ -131,20 +131,20 @@ contract CoinFlip is Ownable {
         pure
         returns (bool)
     {
-        // if (arr1.length != arr2.length) {
-        //     return false;
-        // }
+        if (_arr1.length != _arr2.length) {
+            return false;
+        }
         
 
-        // for (uint256 i = 0; i < arr1.length; i++) {
-        //     if (arr1[i] != arr2[i]) {
-        //         return false;
-        //     }
-        // }
-
-        if (keccak256(abi.encode(_arr1)) == keccak256(abi.encode(_arr2)))  {
-            return true;
+        for (uint256 i = 0; i < _arr1.length; i++) {
+            if (_arr1[i] != _arr2[i]) {
+                return false;
+            }
         }
+
+        // if (keccak256(abi.encode(_arr1)) == keccak256(abi.encode(_arr2)))  {
+        //     return true;
+        // }
 
         return false;
     }
