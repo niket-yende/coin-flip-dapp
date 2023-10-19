@@ -79,13 +79,18 @@ contract CoinFlip is Ownable {
     // Only owner can invoke this init method
     function init() public onlyOwner() {
         // check if the owner has enough apt coins to start a new game
-        require(getTokenBalance(owner()) >= PRIZE_AMOUNT_APT, EInsufficientAptBalance);
+        require(getTokenBalance(msg.sender) >= PRIZE_AMOUNT_APT, EInsufficientAptBalance);
         // require(isGameFinished, "Game still being played");
         // isGameFinished = false;
 
         // Initialize the state object
         state.nextGameId = 0;
         state.prizeClaimed = false;
+
+        // transfer `PRIZE_AMOUNT_APT` amount of APT from the admin to the resource account
+        // aptosCoin.safeTransferFrom(msg.sender, address(this), PRIZE_AMOUNT_APT);
+        // aptosCoin.safeApprove(address(this), PRIZE_AMOUNT_APT);
+        // aptosCoin.transfer(address(this), PRIZE_AMOUNT_APT);
     }
 
     // Function to allow the owner to claim the remaining APT balance
@@ -127,24 +132,24 @@ contract CoinFlip is Ownable {
 
     // Function to compare two arrays of uint8
     function compareArrays(uint8[] memory _arr1, uint8[] memory _arr2)
-        internal
+        public
         pure
         returns (bool)
     {
-        if (_arr1.length != _arr2.length) {
-            return false;
-        }
+        // if (_arr1.length != _arr2.length) {
+        //     return false;
+        // }
         
 
-        for (uint256 i = 0; i < _arr1.length; i++) {
-            if (_arr1[i] != _arr2[i]) {
-                return false;
-            }
-        }
-
-        // if (keccak256(abi.encode(_arr1)) == keccak256(abi.encode(_arr2)))  {
-        //     return true;
+        // for (uint256 i = 0; i < _arr1.length; i++) {
+        //     if (_arr1[i] != _arr2[i]) {
+        //         return false;
+        //     }
         // }
+
+        if (keccak256(abi.encode(_arr1)) == keccak256(abi.encode(_arr2)))  {
+            return true;
+        }
 
         return false;
     }
