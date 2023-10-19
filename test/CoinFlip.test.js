@@ -10,7 +10,7 @@ describe("CoinFip", function () {
   // We use loadFixture to run this setup once, snapshot that state,
   // and reset Hardhat Network to that snapshot in every test.
   async function deployCoinFlipFixture() {
-    const [owner, addr1, addr2] = await ethers.getSigners();
+    const [owner, addr1, addr2, addr3] = await ethers.getSigners();
     const PRIZE_AMOUNT_APT = 1000000000;
 
     // 1000000000000
@@ -22,7 +22,7 @@ describe("CoinFip", function () {
     console.log(await coinFlip.getResourceAccountAddress());
     
     // Fixtures can return anything you consider useful for your tests
-    return { aptosCoin, coinFlip, addr1, addr2, PRIZE_AMOUNT_APT, owner };
+    return { aptosCoin, coinFlip, addr1, addr2, addr3, PRIZE_AMOUNT_APT, owner };
   }
 
   // it("Should assign the total supply of tokens to the owner", async function () {
@@ -288,4 +288,136 @@ describe("CoinFip", function () {
   //   // EOvermindHasAlreadySubmittedTheFlips = "6"
   //   await expect(coinFlip.provideFlipsResult(0, flipsResult)).to.be.revertedWith('6');
   // });
+
+  it("Should test get all games", async function () {
+    const { coinFlip, addr1, addr2, addr3 } = await loadFixture(
+      deployCoinFlipFixture
+    );
+
+    await coinFlip.init();
+
+    const flips1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    const player1 = addr1;
+
+    await coinFlip.connect(player1).guessFlips(flips1);
+
+    const flips2 = [0, 0, 1, 0, 0, 1, 0, 0, 0, 0];
+    const player2 = addr2;
+
+    await coinFlip.connect(player2).guessFlips(flips2);
+
+    const flips3 = [1, 1, 0, 1, 1, 0, 0, 0, 1, 0];
+    const player3 = addr3;
+
+    await coinFlip.connect(player3).guessFlips(flips3);
+
+    const allGames = await coinFlip.getAllGames();
+
+    expect(allGames.length).to.equal(3);
+
+    const game1 = allGames[0];
+    let playerAddress = game1[1];
+    let predictedFlips = JSON.stringify(game1[2].map(value => Number(value)));
+    let stringifiedFlips = JSON.stringify(flips1);
+    let flipsResult = game1[3]; 
+    
+    expect(playerAddress).to.equal(player1.address);
+    expect(predictedFlips).to.equal(stringifiedFlips);
+    expect(flipsResult).to.be.empty;
+
+    const game2 = allGames[1];
+    playerAddress = game2[1];
+    predictedFlips = JSON.stringify(game2[2].map(value => Number(value)));
+    stringifiedFlips = JSON.stringify(flips2);
+    flipsResult = game2[3]; 
+    
+    expect(playerAddress).to.equal(player2.address);
+    expect(predictedFlips).to.equal(stringifiedFlips);
+    expect(flipsResult).to.be.empty;
+
+    const game3 = allGames[2];
+    playerAddress = game3[1];
+    predictedFlips = JSON.stringify(game3[2].map(value => Number(value)));
+    stringifiedFlips = JSON.stringify(flips3);
+    flipsResult = game3[3]; 
+    
+    expect(playerAddress).to.equal(player3.address);
+    expect(predictedFlips).to.equal(stringifiedFlips);
+    expect(flipsResult).to.be.empty;
+  });
+
+  it("Should test get game result", async function () {
+    const { coinFlip, addr1, addr2 } = await loadFixture(
+      deployCoinFlipFixture
+    );
+
+    await coinFlip.init();
+
+    let flips = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    let player = addr1;
+
+    await coinFlip.connect(player).guessFlips(flips);
+
+    const flipsResult = [1, 1, 1, 1, 1, 1, 1, 1, 1, 0];
+
+    await coinFlip.provideFlipsResult(0, flipsResult);
+
+    expect(await coinFlip.getGameResult(0)).to.equal(false);
+
+    flips = [0, 0, 1, 0, 0, 1, 0, 0, 0, 0];
+    player = addr2;
+
+    await coinFlip.connect(player).guessFlips(flips);
+    // await coinFlip.provideFlipsResult(1, flips);
+
+    // expect(await coinFlip.getGameResult(1)).to.equal(true);
+  });
+
+  it("Should test get game result does not exist", async function () {
+    const { coinFlip } = await loadFixture(
+      deployCoinFlipFixture
+    );
+
+    await coinFlip.init();
+
+    // EGameDoesNotExist = "3"
+    await expect(coinFlip.getGameResult(0)).to.be.revertedWith('3');
+  });
+
+  it("Should test get game result where overmind has not submitted the flips yet", async function () {
+    const { coinFlip, addr1 } = await loadFixture(
+      deployCoinFlipFixture
+    );
+
+    await coinFlip.init();
+
+    const flips = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    const player = addr1;
+
+    await coinFlip.connect(player).guessFlips(flips);
+
+    // EOvermindHasNotSubmittedTheFlipsYet = "7"
+    await expect(coinFlip.getGameResult(0)).to.be.revertedWith('7');
+  });
+
+  it("Should test get resource account address", async function () {
+    const { coinFlip, owner } = await loadFixture(
+      deployCoinFlipFixture
+    );
+
+    expect(await coinFlip.getResourceAccountAddress()).to.equal(owner.address);
+  });
+
+  it("Should test get next game id", async function () {
+    const { coinFlip } = await loadFixture(
+      deployCoinFlipFixture
+    );
+
+    const nextGameId = 4654115;
+
+    // We can't store the return value since it is a transaction which can't be marked as view.
+    await coinFlip.getNextGameId(nextGameId)
+    const state = await coinFlip.state();
+    expect(state.nextGameId).to.equal(4654116);
+  });
 });

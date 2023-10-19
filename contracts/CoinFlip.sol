@@ -87,6 +87,9 @@ contract CoinFlip is Ownable {
         state.nextGameId = 0;
         state.prizeClaimed = false;
 
+        // Reset games
+        delete gameList;
+
         // transfer `PRIZE_AMOUNT_APT` amount of APT from the admin to the resource account
         // aptosCoin.safeTransferFrom(msg.sender, address(this), PRIZE_AMOUNT_APT);
         // aptosCoin.safeApprove(address(this), PRIZE_AMOUNT_APT);
@@ -102,7 +105,7 @@ contract CoinFlip is Ownable {
     // Function to create a new game and allow players to guess the flips
     // Check if the provided flips are valid
     function guessFlips(uint8[] memory _flips) external checkIfFlipsAreValid(_flips) prizeAmountClaimed {
-        uint256 _gameId = getNextGameId(state);
+        uint256 _gameId = getNextGameId(state.nextGameId);
         Game memory game = Game(_gameId, msg.sender, _flips, new uint8[](0), true);
         state.games[_gameId] = game;
         gameList.push(game);
@@ -181,8 +184,8 @@ contract CoinFlip is Ownable {
         return aptosCoin.balanceOf(_accountAddress);
     }
 
-    function getNextGameId(State storage _state) internal returns (uint256) {
-        uint256 gameId = _state.nextGameId;
+    function getNextGameId(uint256 _nextGameId) public returns (uint256) {
+        uint256 gameId = _nextGameId;
         state.nextGameId = gameId + 1;
         return gameId;
     }
