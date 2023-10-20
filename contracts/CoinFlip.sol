@@ -27,11 +27,7 @@ contract CoinFlip is Ownable {
     Game[] public gameList;
     uint8 constant HEAD = 0;
     uint8 constant TAIL = 1;
-    // uint256 public nextGameId = 0;
-    // mapping(uint256 => Game) public games;
-    // bool public prizeClaimed = false;
     State public state;
-    // bool public isGameFinished = false;
     IERC20 public aptosCoin;
     uint8 private constant NUMBER_OF_FLIPS = 10;
     uint64 private constant PRIZE_AMOUNT_APT = 1000000000; // 10 APT
@@ -80,8 +76,6 @@ contract CoinFlip is Ownable {
     function init() public onlyOwner() {
         // check if the owner has enough apt coins to start a new game
         require(getTokenBalance(msg.sender) >= PRIZE_AMOUNT_APT, EInsufficientAptBalance);
-        // require(isGameFinished, "Game still being played");
-        // isGameFinished = false;
 
         // Initialize the state object
         state.nextGameId = 0;
@@ -111,7 +105,6 @@ contract CoinFlip is Ownable {
     // Function for the owner to provide the flip results and distribute prizes
     function provideFlipsResult(uint256 _gameId, uint8[] memory _flipsResult) external isOvermindOwner checkIfFlipsAreValid(_flipsResult) prizeAmountClaimed {
         // Check if the game exists
-        // mapping(uint256 => Game) storage games = state.games;
         Game storage game = state.games[_gameId];
         require(game.isPresent, EGameDoesNotExist);
 
@@ -134,16 +127,6 @@ contract CoinFlip is Ownable {
         pure
         returns (bool)
     {
-        // if (_arr1.length != _arr2.length) {
-        //     return false;
-        // }
-        
-
-        // for (uint256 i = 0; i < _arr1.length; i++) {
-        //     if (_arr1[i] != _arr2[i]) {
-        //         return false;
-        //     }
-        // }
 
         if (keccak256(abi.encode(_arr1)) == keccak256(abi.encode(_arr2)))  {
             return true;
