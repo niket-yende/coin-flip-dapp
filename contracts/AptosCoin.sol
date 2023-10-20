@@ -12,9 +12,9 @@ contract AptosCoin is ERC20, ERC20Burnable {
         _;
     }
 
-    constructor(string memory name, string memory symbol, uint256 _amount) ERC20(name, symbol) {
+    constructor(string memory name, string memory symbol, uint256 amount) ERC20(name, symbol) {
         owner = msg.sender;
-        mint(msg.sender, _amount);
+        mint(msg.sender, amount);
     }
 
     function mint(address to, uint256 amount) public onlyOwner {
