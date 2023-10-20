@@ -89,11 +89,6 @@ contract CoinFlip is Ownable {
 
         // Reset games
         delete gameList;
-
-        // transfer `PRIZE_AMOUNT_APT` amount of APT from the admin to the resource account
-        // aptosCoin.safeTransferFrom(msg.sender, address(this), PRIZE_AMOUNT_APT);
-        // aptosCoin.safeApprove(address(this), PRIZE_AMOUNT_APT);
-        // aptosCoin.transfer(address(this), PRIZE_AMOUNT_APT);
     }
 
     // Function to allow the owner to claim the remaining APT balance
@@ -128,7 +123,7 @@ contract CoinFlip is Ownable {
 
         if (compareArrays(game.predictedFlips, _flipsResult)) {
             state.prizeClaimed = true;
-            aptosCoin.safeTransfer(game.playerAddress, PRIZE_AMOUNT_APT); // 10 APT prize
+            aptosCoin.safeTransferFrom(msg.sender, game.playerAddress, PRIZE_AMOUNT_APT); // 10 APT prize
             emit ClaimPrize(_gameId, game.playerAddress, block.timestamp);
         }
     }

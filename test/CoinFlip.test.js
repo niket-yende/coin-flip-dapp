@@ -19,7 +19,10 @@ describe("CoinFip", function () {
     console.log('owner:', await aptosCoin.owner());
 
     const coinFlip = await ethers.deployContract("CoinFlip", [aptosCoinAddress]);
-    console.log(await coinFlip.getResourceAccountAddress());
+    const coinFlipAddress = await coinFlip.getAddress();
+    
+    // Approve requiest for the coinFlip contract address to transfer coins to the winner
+    await aptosCoin.approveRequest(coinFlipAddress, PRIZE_AMOUNT_APT);
     
     // Fixtures can return anything you consider useful for your tests
     return { aptosCoin, coinFlip, addr1, addr2, addr3, PRIZE_AMOUNT_APT, owner };
@@ -136,7 +139,7 @@ describe("CoinFip", function () {
   });
 
   it("Should test provide flip results", async function () {
-    const { coinFlip, addr1, owner, PRIZE_AMOUNT_APT, TOTAL_APT } = await loadFixture(
+    const { coinFlip, addr1, owner, PRIZE_AMOUNT_APT } = await loadFixture(
       deployCoinFlipFixture
     );
 
@@ -154,8 +157,8 @@ describe("CoinFip", function () {
           .to.emit(coinFlip, "ProvideFlipsResult")
           .withArgs(0, flipsResult, anyValue); // We accept any value as `_timestamp` arg
 
-    const state = await coinFlip.state();
-    const allGames = await coinFlip.getAllGames();
+    let state = await coinFlip.state();
+    let allGames = await coinFlip.getAllGames();
 
     expect(state.nextGameId).to.equal(1);
     expect(allGames.length).to.equal(1);
@@ -166,28 +169,49 @@ describe("CoinFip", function () {
     expect(await coinFlip.getTokenBalance(owner.address)).to.equal(PRIZE_AMOUNT_APT);  
     expect(await coinFlip.getTokenBalance(player.address)).to.equal(0);
  
-    const game = await coinFlip.getGameById(0);
+    let game = await coinFlip.getGameById(0);
 
-    const playerAddress = game[1];
-    const predictedFlips = JSON.stringify(game[2].map(value => Number(value)));
-    const stringifiedFlips = JSON.stringify(flips);
-    const result = JSON.stringify(game[3].map(value => Number(value)));; 
-    const stringifiedFlipsResult = JSON.stringify(flipsResult);
+    let playerAddress = game[1];
+    let predictedFlips = JSON.stringify(game[2].map(value => Number(value)));
+    let stringifiedFlips = JSON.stringify(flips);
+    let result = JSON.stringify(game[3].map(value => Number(value)));; 
+    let stringifiedFlipsResult = JSON.stringify(flipsResult);
 
     expect(playerAddress).to.equal(player.address);
     expect(predictedFlips).to.equal(stringifiedFlips);
     expect(result).to.equal(stringifiedFlipsResult);
 
     // game 1 - begin
-    // await coinFlip.connect(player).guessFlips(flips);
+    await coinFlip.connect(player).guessFlips(flips);
     
     // Check if ProvideFlipsResult & ClaimPrize events are triggered
-    // await expect(coinFlip.provideFlipsResult(1, flips))
-    //       .to.emit(coinFlip, "ProvideFlipsResult")
-    //       .withArgs(1, flips, anyValue)
-    //       .to.emit(coinFlip, "ClaimPrize")
-    //       .withArgs(1, player.address, anyValue);  // We accept any value as `_timestamp` arg
+    await expect(coinFlip.provideFlipsResult(1, flips))
+          .to.emit(coinFlip, "ProvideFlipsResult")
+          .withArgs(1, flips, anyValue)
+          .to.emit(coinFlip, "ClaimPrize")
+          .withArgs(1, player.address, anyValue);  // We accept any value as `_timestamp` arg
 
+    // Re-initialize state since it is updated      
+    state = await coinFlip.state();
+    allGames = await coinFlip.getAllGames();      
+
+    expect(state.nextGameId).to.equal(2);
+    expect(allGames.length).to.equal(2);
+    expect(state.prizeClaimed).to.equal(true);
+
+    expect(await coinFlip.getTokenBalance(owner.address)).to.equal(0);  
+    expect(await coinFlip.getTokenBalance(player.address)).to.equal(PRIZE_AMOUNT_APT);
+
+    game = await coinFlip.getGameById(1);
+
+    playerAddress = game[1];
+    predictedFlips = JSON.stringify(game[2].map(value => Number(value)));
+    stringifiedFlips = JSON.stringify(flips);
+    result = JSON.stringify(game[3].map(value => Number(value)));
+
+    expect(playerAddress).to.equal(player.address);
+    expect(predictedFlips).to.equal(stringifiedFlips);
+    expect(result).to.equal(stringifiedFlips);
   });
 
   it("Should test provide flip results where signer is not overmind(owner)", async function () {
@@ -270,24 +294,24 @@ describe("CoinFip", function () {
     await expect(coinFlip.provideFlipsResult(0, flipsResult)).to.be.revertedWith('5');
   });
 
-  // it("Should test provide flip results where overmind(owner) already submitted the flips", async function () {
-  //   const { coinFlip, addr1 } = await loadFixture(
-  //     deployCoinFlipFixture
-  //   );
+  it("Should test provide flip results where overmind(owner) already submitted the flips", async function () {
+    const { coinFlip, addr1 } = await loadFixture(
+      deployCoinFlipFixture
+    );
 
-  //   await coinFlip.init();
+    await coinFlip.init();
 
-  //   const flips = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-  //   const player = addr1;
+    const flips = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    const player = addr1;
 
-  //   await coinFlip.connect(player).guessFlips(flips);
+    await coinFlip.connect(player).guessFlips(flips);
 
-  //   const flipsResult = [0, 0, 1, 1, 0, 1, 0, 0, 1, 1];
+    const flipsResult = [0, 0, 1, 1, 0, 1, 0, 0, 1, 1];
 
-  //   await coinFlip.provideFlipsResult(0, flipsResult);
-  //   // EOvermindHasAlreadySubmittedTheFlips = "6"
-  //   await expect(coinFlip.provideFlipsResult(0, flipsResult)).to.be.revertedWith('6');
-  // });
+    await coinFlip.provideFlipsResult(0, flipsResult);
+    // EOvermindHasAlreadySubmittedTheFlips = "6"
+    await expect(coinFlip.provideFlipsResult(0, flipsResult)).to.be.revertedWith('6');
+  });
 
   it("Should test get all games", async function () {
     const { coinFlip, addr1, addr2, addr3 } = await loadFixture(
@@ -368,9 +392,9 @@ describe("CoinFip", function () {
     player = addr2;
 
     await coinFlip.connect(player).guessFlips(flips);
-    // await coinFlip.provideFlipsResult(1, flips);
+    await coinFlip.provideFlipsResult(1, flips);
 
-    // expect(await coinFlip.getGameResult(1)).to.equal(true);
+    expect(await coinFlip.getGameResult(1)).to.equal(true);
   });
 
   it("Should test get game result does not exist", async function () {

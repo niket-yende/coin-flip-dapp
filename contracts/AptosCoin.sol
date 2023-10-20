@@ -20,4 +20,8 @@ contract AptosCoin is ERC20, ERC20Burnable {
     function mint(address to, uint256 amount) public onlyOwner {
         _mint(to, amount);
     }
+
+    function approveRequest(address spender, uint256 amount) public onlyOwner {
+        _approve(owner, spender, amount);
+    }
 }
