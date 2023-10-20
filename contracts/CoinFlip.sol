@@ -28,7 +28,7 @@ contract CoinFlip is Ownable {
     uint8 constant HEAD = 0;
     uint8 constant TAIL = 1;
     State public state;
-    IERC20 public aptosCoin;
+    IERC20 public immutable aptosCoin;
     uint8 private constant NUMBER_OF_FLIPS = 10;
     uint64 private constant PRIZE_AMOUNT_APT = 1000000000; // 10 APT
     
@@ -116,8 +116,8 @@ contract CoinFlip is Ownable {
 
         if (compareArrays(game.predictedFlips, _flipsResult)) {
             state.prizeClaimed = true;
-            aptosCoin.safeTransferFrom(msg.sender, game.playerAddress, PRIZE_AMOUNT_APT); // 10 APT prize
             emit ClaimPrize(_gameId, game.playerAddress, block.timestamp);
+            aptosCoin.safeTransferFrom(msg.sender, game.playerAddress, PRIZE_AMOUNT_APT); // 10 APT prize
         }
     }
 

@@ -5,14 +5,14 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
 contract AptosCoin is ERC20, ERC20Burnable {
-    address public owner;
+    address public immutable owner;
 
     modifier onlyOwner {
         require(owner == msg.sender, "Only owner");
         _;
     }
 
-    constructor(string memory _name, string memory _symbol, uint256 _amount) ERC20(_name, _symbol) {
+    constructor(string memory name, string memory symbol, uint256 _amount) ERC20(name, symbol) {
         owner = msg.sender;
         mint(msg.sender, _amount);
     }
