@@ -6,7 +6,7 @@ async function main() {
 
   console.log("Deploying contracts with the account:", deployer.address);
 
-  const aptosCoin = await ethers.deployContract("AptosCoin", ["AptosCoin", "APT", 1000000000000]);
+  const aptosCoin = await ethers.deployContract("AptosCoin", ["AptosCoin", "APT", PRIZE_AMOUNT_APT]);
 
   const aptosCoinAddress = await aptosCoin.getAddress();
   console.log("aptosCoin address:", aptosCoinAddress);

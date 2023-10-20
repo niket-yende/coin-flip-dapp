@@ -13,7 +13,6 @@ describe("CoinFip", function () {
     const [owner, addr1, addr2, addr3] = await ethers.getSigners();
     const PRIZE_AMOUNT_APT = 1000000000;
 
-    // 1000000000000
     const aptosCoin = await ethers.deployContract("AptosCoin", ["AptosCoin", "APT", PRIZE_AMOUNT_APT]);
     const aptosCoinAddress = await aptosCoin.getAddress();
     console.log('owner:', await aptosCoin.owner());
@@ -27,13 +26,6 @@ describe("CoinFip", function () {
     // Fixtures can return anything you consider useful for your tests
     return { aptosCoin, coinFlip, addr1, addr2, addr3, PRIZE_AMOUNT_APT, owner };
   }
-
-  // it("Should assign the total supply of tokens to the owner", async function () {
-  //   const { hardhatToken, owner } = await loadFixture(deployTokenFixture);
-
-  //   const ownerBalance = await hardhatToken.balanceOf(owner.address);
-  //   expect(await hardhatToken.totalSupply()).to.equal(ownerBalance);
-  // });
 
   it("Should test init module", async function () {
     const { coinFlip } = await loadFixture(
@@ -50,7 +42,8 @@ describe("CoinFip", function () {
     expect(state.prizeClaimed).to.equal(false);
   });
 
-  it("Should test init module insufficient apt balance", async function () {
+  it("Should test init module with insufficient apt balance", async function () {
+    // Deployed with less aptosCoin
     const aptosCoin = await ethers.deployContract("AptosCoin", ["AptosCoin", "APT", 10000]);
     const aptosCoinAddress = await aptosCoin.getAddress();
     const coinFlip = await ethers.deployContract("CoinFlip", [aptosCoinAddress]);
@@ -60,7 +53,7 @@ describe("CoinFip", function () {
   });
 
   it("Should test guess flips", async function () {
-    const { coinFlip, addr1 } = await loadFixture(
+    const { coinFlip, owner, addr1, PRIZE_AMOUNT_APT } = await loadFixture(
       deployCoinFlipFixture
     );
 
@@ -77,6 +70,9 @@ describe("CoinFip", function () {
     expect(state.nextGameId).to.equal(1);
     expect(allGames.length).to.equal(1);
     expect(state.prizeClaimed).to.equal(false);
+
+    expect(await coinFlip.getTokenBalance(owner.address)).to.equal(PRIZE_AMOUNT_APT);  
+    expect(await coinFlip.getTokenBalance(player.address)).to.equal(0);
 
     const game = await coinFlip.getGameById(0);
 
@@ -164,7 +160,7 @@ describe("CoinFip", function () {
     expect(allGames.length).to.equal(1);
     expect(state.prizeClaimed).to.equal(false); // Since the flip result is diffrerent
 
-    // check the account balances for the 3 addresses
+    // check the account balances for the addresses
     // add account balance check for resource address ie. CoinFlip contract address
     expect(await coinFlip.getTokenBalance(owner.address)).to.equal(PRIZE_AMOUNT_APT);  
     expect(await coinFlip.getTokenBalance(player.address)).to.equal(0);
@@ -191,7 +187,7 @@ describe("CoinFip", function () {
           .to.emit(coinFlip, "ClaimPrize")
           .withArgs(1, player.address, anyValue);  // We accept any value as `_timestamp` arg
 
-    // Re-initialize state since it is updated      
+    // Fetch latest state, since it is updated      
     state = await coinFlip.state();
     allGames = await coinFlip.getAllGames();      
 
