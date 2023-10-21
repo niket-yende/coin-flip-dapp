@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
@@ -33,37 +33,37 @@ contract CoinFlip is Ownable {
     uint64 private constant PRIZE_AMOUNT_APT = 1000000000; // 10 APT
     
     // Error codes
-    string private constant EInsufficientAptBalance = "0";
-    string private constant ESignerIsNotOvermind = "1";
-    string private constant EPrizeHasAlreadyBeenClaimed = "2";
-    string private constant EGameDoesNotExist = "3";
-    string private constant EInvalidNumberOfFlips = "4";
-    string private constant EInvalidFlipValue = "5";
-    string private constant EOvermindHasAlreadySubmittedTheFlips = "6";
-    string private constant EOvermindHasNotSubmittedTheFlipsYet = "7";
+    string private constant EINSUFFICIENT_APT_BALANCE = "0";
+    string private constant ESIGNER_IS_NOT_OVERMIND = "1";
+    string private constant EPRIZE_HAS_ALREADY_BEEN_CLAIMED = "2";
+    string private constant EGAME_DOES_NOT_EXIST = "3";
+    string private constant EINVALID_NUMBER_OF_FLIPS = "4";
+    string private constant EINVALID_FLIP_VALUE = "5";
+    string private constant EOVERMIND_HAS_ALREADY_SUBMITTED_THE_FLIPS = "6";
+    string private constant EOVERMIND_HAS_NOT_SUBMITTED_THE_FLIPS_YET = "7";
 
     event GuessFlips(uint256 _gameId, uint8[] _flips, uint _timestamp);
     event ProvideFlipsResult(uint256 _gameId, uint8[] _flipsResult, uint _timestamp);
     event ClaimPrize(uint256 _gameId, address _player, uint _timestamp);
 
     modifier checkIfFlipsAreValid(uint8[] memory _flips) {
-        require(_flips.length == NUMBER_OF_FLIPS, EInvalidNumberOfFlips);
+        require(_flips.length == NUMBER_OF_FLIPS, EINVALID_NUMBER_OF_FLIPS);
 
         // Iterate over `flips` and ensure that each element equals either `HEAD` or `TAIL`
-        // If an element is not either of those, revert with error code: EInvalidFlipValue
+        // If an element is not either of those, revert with error code: EINVALID_FLIP_VALUE
         for (uint256 i = 0; i < _flips.length; i++) {
-            require(_flips[i] == HEAD || _flips[i] == TAIL, EInvalidFlipValue);
+            require(_flips[i] == HEAD || _flips[i] == TAIL, EINVALID_FLIP_VALUE);
         }
         _;
     }
 
     modifier prizeAmountClaimed {
-        require(!state.prizeClaimed, EPrizeHasAlreadyBeenClaimed);
+        require(!state.prizeClaimed, EPRIZE_HAS_ALREADY_BEEN_CLAIMED);
         _;
     }
 
     modifier isOvermindOwner {
-        require(msg.sender == owner(), ESignerIsNotOvermind);
+        require(msg.sender == owner(), ESIGNER_IS_NOT_OVERMIND);
         _;
     }
 
@@ -75,7 +75,7 @@ contract CoinFlip is Ownable {
     // Only owner can invoke this init method
     function init() public onlyOwner() {
         // check if the owner has enough apt coins to start a new game
-        require(getTokenBalance(msg.sender) >= PRIZE_AMOUNT_APT, EInsufficientAptBalance);
+        require(getTokenBalance(msg.sender) >= PRIZE_AMOUNT_APT, EINSUFFICIENT_APT_BALANCE);
 
         // Initialize the state object
         state.nextGameId = 0;
@@ -106,9 +106,9 @@ contract CoinFlip is Ownable {
     function provideFlipsResult(uint256 _gameId, uint8[] memory _flipsResult) external isOvermindOwner checkIfFlipsAreValid(_flipsResult) prizeAmountClaimed {
         // Check if the game exists
         Game storage game = state.games[_gameId];
-        require(game.isPresent, EGameDoesNotExist);
+        require(game.isPresent, EGAME_DOES_NOT_EXIST);
 
-        require(checkIfOvermindHasNotSubmittedFlipsYet(game), EOvermindHasAlreadySubmittedTheFlips);
+        require(checkIfOvermindHasNotSubmittedFlipsYet(game), EOVERMIND_HAS_ALREADY_SUBMITTED_THE_FLIPS);
 
         game.flipsResult = _flipsResult;
 
@@ -148,8 +148,8 @@ contract CoinFlip is Ownable {
         // Check if the game exists
         mapping(uint256 => Game) storage games = state.games;
         Game memory game = games[_gameId];
-        require(game.isPresent, EGameDoesNotExist);
-        require(checkIfOvermindHasAlreadySubmittedTheFlips(game), EOvermindHasNotSubmittedTheFlipsYet);
+        require(game.isPresent, EGAME_DOES_NOT_EXIST);
+        require(checkIfOvermindHasAlreadySubmittedTheFlips(game), EOVERMIND_HAS_NOT_SUBMITTED_THE_FLIPS_YET);
 
         return compareArrays(game.predictedFlips, game.flipsResult);       
     }

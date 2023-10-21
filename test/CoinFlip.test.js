@@ -48,7 +48,7 @@ describe("CoinFip", function () {
     const aptosCoinAddress = await aptosCoin.getAddress();
     const coinFlip = await ethers.deployContract("CoinFlip", [aptosCoinAddress]);
 
-    // EInsufficientAptBalance = "0"
+    // EINSUFFICIENT_APT_BALANCE = "0"
     await expect(coinFlip.init()).to.be.revertedWith('0');
   });
 
@@ -99,7 +99,7 @@ describe("CoinFip", function () {
     const flips = [0, 0, 0, 0, 0, 0, 0, 1, 1, 0];
     const player = addr1;
 
-    // EPrizeHasAlreadyBeenClaimed = "2"
+    // EPRIZE_HAS_ALREADY_BEEN_CLAIMED = "2"
     await expect(coinFlip.connect(player).guessFlips(flips)).to.be.revertedWith('2');
 
     // Reset claimedPrize flag to false
@@ -116,7 +116,7 @@ describe("CoinFip", function () {
     const flips = [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1];
     const player = addr1;
 
-    // EInvalidNumberOfFlips = "4"
+    // EINVALID_NUMBER_OF_FLIPS = "4"
     await expect(coinFlip.connect(player).guessFlips(flips)).to.be.revertedWith('4');
   });
 
@@ -130,7 +130,7 @@ describe("CoinFip", function () {
     const flips = [0, 0, 0, 0, 2, 0, 0, 1, 1, 0];
     const player = addr1;
 
-    // EInvalidFlipValue = "5"
+    // EINVALID_FLIP_VALUE = "5"
     await expect(coinFlip.connect(player).guessFlips(flips)).to.be.revertedWith('5');
   });
 
@@ -218,7 +218,7 @@ describe("CoinFip", function () {
     const flips = [0, 0, 1, 1, 0, 1, 0, 0, 1, 1];
     const player = addr1;
 
-    // ESignerIsNotOvermind = "1"
+    // ESIGNER_IS_NOT_OVERMIND = "1"
     await expect(coinFlip.connect(player).provideFlipsResult(0, flips)).to.be.revertedWith('1');
   });
 
@@ -234,7 +234,7 @@ describe("CoinFip", function () {
 
     const flips = [0, 0, 1, 1, 0, 1, 0, 0, 1, 1];
 
-    // EPrizeHasAlreadyBeenClaimed = "2"
+    // EPRIZE_HAS_ALREADY_BEEN_CLAIMED = "2"
     await expect(coinFlip.provideFlipsResult(0, flips)).to.be.revertedWith('2');
 
     // Reset claimedPrize flag to false
@@ -250,7 +250,7 @@ describe("CoinFip", function () {
 
     const flips = [0, 0, 1, 1, 0, 1, 0, 0, 1, 1];
 
-    // EGameDoesNotExist = "3"
+    // EGAME_DOES_NOT_EXIST = "3"
     await expect(coinFlip.provideFlipsResult(0, flips)).to.be.revertedWith('3');
   });
 
@@ -268,7 +268,7 @@ describe("CoinFip", function () {
 
     const flipsResult = [0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1];
 
-    // EInvalidNumberOfFlips = "4"
+    // EINVALID_NUMBER_OF_FLIPS = "4"
     await expect(coinFlip.provideFlipsResult(0, flipsResult)).to.be.revertedWith('4');
   });
 
@@ -286,7 +286,7 @@ describe("CoinFip", function () {
 
     const flipsResult = [0, 0, 1, 1, 0, 1, 0, 2, 1, 1];
 
-    // EInvalidFlipValue = "5"
+    // EINVALID_FLIP_VALUE = "5"
     await expect(coinFlip.provideFlipsResult(0, flipsResult)).to.be.revertedWith('5');
   });
 
@@ -305,7 +305,7 @@ describe("CoinFip", function () {
     const flipsResult = [0, 0, 1, 1, 0, 1, 0, 0, 1, 1];
 
     await coinFlip.provideFlipsResult(0, flipsResult);
-    // EOvermindHasAlreadySubmittedTheFlips = "6"
+    // EOVERMIND_HAS_ALREADY_SUBMITTED_THE_FLIPS = "6"
     await expect(coinFlip.provideFlipsResult(0, flipsResult)).to.be.revertedWith('6');
   });
 
@@ -400,7 +400,7 @@ describe("CoinFip", function () {
 
     await coinFlip.init();
 
-    // EGameDoesNotExist = "3"
+    // EGAME_DOES_NOT_EXIST = "3"
     await expect(coinFlip.getGameResult(0)).to.be.revertedWith('3');
   });
 
@@ -416,7 +416,7 @@ describe("CoinFip", function () {
 
     await coinFlip.connect(player).guessFlips(flips);
 
-    // EOvermindHasNotSubmittedTheFlipsYet = "7"
+    // EOVERMIND_HAS_NOT_SUBMITTED_THE_FLIPS_YET = "7"
     await expect(coinFlip.getGameResult(0)).to.be.revertedWith('7');
   });
 
