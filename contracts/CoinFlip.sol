@@ -30,7 +30,7 @@ contract CoinFlip is Ownable {
     State public state;
     IERC20 public immutable aptosCoin;
     uint8 private constant NUMBER_OF_FLIPS = 10;
-    uint64 private constant PRIZE_AMOUNT_APT = 1000000000; // 10 APT
+    uint64 private constant PRIZE_AMOUNT_APT = 1_000_000_000; // 10 APT
     
     // Error codes
     string private constant EINSUFFICIENT_APT_BALANCE = "0";
