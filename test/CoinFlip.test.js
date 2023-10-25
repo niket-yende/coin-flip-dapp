@@ -439,4 +439,23 @@ describe("CoinFip", function () {
     const state = await coinFlip.state();
     expect(state.nextGameId).to.equal(4654116);
   });
+
+  // Additional test case for zero address check
+  it("Should test for invalid zero address", async function () {
+    const { coinFlip } = await loadFixture(
+      deployCoinFlipFixture
+    );
+
+    // Create a variable for the 0x address
+    const zeroAddress = "0x0000000000000000000000000000000000000000";
+    const player = await ethers.getSigner(zeroAddress);
+    const flips = [0, 0, 1, 0, 0, 1, 0, 0, 0, 0];
+
+    try {
+      await coinFlip.connect(player).guessFlips(flips);
+    } catch(error) {
+      const msg = error.message;
+      expect(error.message).to.include('unknown account');
+    }
+  });
 });
