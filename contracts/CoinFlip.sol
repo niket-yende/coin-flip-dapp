@@ -94,6 +94,7 @@ contract CoinFlip is Ownable {
     // Function to create a new game and allow players to guess the flips
     // Check if the provided flips are valid
     function guessFlips(uint8[] memory _flips) external checkIfFlipsAreValid(_flips) prizeAmountClaimed {
+        require(msg.sender != address(0), 'Invalid player address');
         uint256 _gameId = getNextGameId(state.nextGameId);
         Game memory game = Game(_gameId, msg.sender, _flips, new uint8[](0), true);
         state.games[_gameId] = game;
