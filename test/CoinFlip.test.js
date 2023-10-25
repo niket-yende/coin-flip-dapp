@@ -15,7 +15,6 @@ describe("CoinFip", function () {
 
     const aptosCoin = await ethers.deployContract("AptosCoin", ["AptosCoin", "APT", PRIZE_AMOUNT_APT]);
     const aptosCoinAddress = await aptosCoin.getAddress();
-    console.log('owner:', await aptosCoin.owner());
 
     const coinFlip = await ethers.deployContract("CoinFlip", [aptosCoinAddress]);
     const coinFlipAddress = await coinFlip.getAddress();
